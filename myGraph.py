@@ -15,13 +15,11 @@ class Graph:
         self.quantityNos = self.quantityNos + 1
 
     def insert_nos_adj(self, no, adjacente, value):
-        if adjacente not in self.graphNos:
-            self.insert_nos_graph(adjacente)
-        self.graphNos[no][adjacente] = value
+        self.graphNos[no][adjacente] = value # insere na chave no o dicionario adjacente com seu respectivo valor de peso
 
     # Algorithm Dijkstra
     def algorithm_dijkstra_smaller_path(self, origem):
-
+        self.origem = origem
         ## Inicialização dos vértices
         dist = {no: float('inf') for no in self.graphNos} # dicionário que guarda a menor distância entre o vértice de origem e os demais
         dist[origem] = 0;
@@ -47,12 +45,7 @@ class Graph:
 
         self.distancias = dist
         self.previous = previous
-        self.origem = verticeAtual
 
-
-    def status(self):
-        for i in self.nosList:
-            print(i)
     # method to return a custom string it's equal to toString in java
     def __str__(self):
         if not (hasattr(self, 'distancias')):
@@ -61,15 +54,30 @@ class Graph:
         for no, distance in self.distancias.items():
             if no == self.origem:
                 continue
-            result += f"{no}: {distance}\n"
+
+            # Reconstroi o caminho
+            path = []
+            actual = no
+            while actual is not None:
+                if(actual != self.origem):
+                    path.append(actual)
+                actual = self.previous[actual]
+            path.reverse() # revertendo para deixar na ordem
+
+            path_str = " --> ".join(path)
+            result += f"{self.origem} para {no}\n	Distancia: {str(distance).replace('.', ',')}\n	Caminho:  --> {path_str}\n"
+        result+="---------------------------------------------"
         return result
 
 
 ############################# Main #################################
-graph = Graph()
+graph = Graph() # instanciando o objeto Graph
 
 while True:
-    line = input().strip()  # .strip() remove spaces in the beggining and end of the string " Hello world " ---> "Hello world"
+    try:
+        line = input().strip()  # .strip() remove spaces in the beginning and end of the string " Hello world " ---> "Hello world"
+    except EOFError:
+        break
     # se ler linha vazia, para de ler
     if line == "":
         break
@@ -77,13 +85,13 @@ while True:
     partes = line.split(maxsplit=1)  # recebe a linha A " independe do números de espaços, quebra sempre em duas linhas"  A 50 --> ['A', '50'] ou A -> ['A']
     if(len(partes) ==1):
       actual = partes[0]
-      graph.insert_nos_graph(actual)
+      graph.insert_nos_graph(actual) # insertions this NO like a key
 
     else:
-      # divide a linha atráves do delimitador dos espaços
+
       try:
             adjacente = partes[0].strip()  # adjacentes do nó
-            value = float(partes[1].strip())  # pesos dos adj
+            value = float(partes[1].strip())  # peso da aresta entre o nó antecessor e sucessor
             graph.insert_nos_adj(actual, adjacente, value)
 
 
@@ -92,10 +100,13 @@ while True:
           print("formato inválido")
 
 
-for i in graph.graphNos.keys():
+keys = list(graph.graphNos.keys())
+for idx, i in enumerate(keys):
     graph.algorithm_dijkstra_smaller_path(i)
-    print(f"Origem: {i}")
-    print(graph)
-    print("\n")
+    print(graph, end="")
 
-print(graph)  # isso automaticamente chama a função __str__
+    if idx != len(keys) - 1:
+        print()
+
+
+
